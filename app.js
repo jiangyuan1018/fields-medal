@@ -345,7 +345,7 @@
         animTime += dt;
         angleBase += dt * .00032;
         introElapsed = Math.min(INTRO_MS, introElapsed + dt);
-        if (introJustFinished && introElapsed >= INTRO_MS) emitSound('bell');
+        if (introJustFinished && introElapsed >= INTRO_MS) emitSound('chord');
       }
       if (!document.hidden && hero.getBoundingClientRect().bottom > -200) draw();
       requestAnimationFrame(loop);
@@ -657,27 +657,42 @@
     });
   }
 
-  /* ---------------- Synthesized sound layer (Web Audio, no audio files) ---------------- */
+  /* ---------------- Cosmic soundscape (Web Audio, no audio files) ---------------- */
   function initAudio() {
-    const LEVEL = .16;
-    let ctx = null, master = null, noiseBuf = null, enabled = false;
+    const LEVEL = .24, ROOT = 110, PHI = 1.6180339887;
+    let ctx = null, master = null, bus = null, noiseBuf = null, enabled = false;
+    let drones = [], dustTimer = null;
     const toggles = document.querySelectorAll('[data-sound-toggle]');
     const hint = $('#sound-hint');
     document.body.dataset.sound = 'off';
 
+    // A long, exponentially decaying noise impulse = deep-space reverb for every voice.
+    function impulse(seconds) {
+      const rate = ctx.sampleRate, len = Math.floor(rate * seconds);
+      const buf = ctx.createBuffer(2, len, rate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = buf.getChannelData(ch);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.7);
+      }
+      return buf;
+    }
     function ensure() {
       if (ctx) return true;
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return false;
       try {
         ctx = new AC();
-        master = ctx.createGain();
-        master.gain.value = .0001;
-        master.connect(ctx.destination);
-        const len = Math.floor(ctx.sampleRate * .5);
+        master = ctx.createGain(); master.gain.value = .0001; master.connect(ctx.destination);
+        bus = ctx.createGain(); bus.gain.value = 1;
+        const dry = ctx.createGain(); dry.gain.value = .78;
+        bus.connect(dry); dry.connect(master);
+        const conv = ctx.createConvolver(); conv.buffer = impulse(4.5);
+        const wet = ctx.createGain(); wet.gain.value = .62;
+        bus.connect(conv); conv.connect(wet); wet.connect(master);
+        const len = Math.floor(ctx.sampleRate * 1.2);
         noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
-        const data = noiseBuf.getChannelData(0);
-        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+        const nd = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) nd[i] = Math.random() * 2 - 1;
         return true;
       } catch (e) { return false; }
     }
@@ -688,67 +703,122 @@
     }
     function envelope(g, t, peak, attack, dur) {
       g.gain.setValueAtTime(.0001, t);
-      g.gain.exponentialRampToValueAtTime(Math.max(.0001, peak), t + attack);
+      g.gain.exponentialRampToValueAtTime(Math.max(.0001, peak), t + Math.max(.004, attack));
       g.gain.exponentialRampToValueAtTime(.0001, t + dur);
     }
-    function tone(freq, peak, dur, type, delay) {
+    function tone(freq, peak, dur, opt) {
       if (!enabled || !ctx || ctx.state !== 'running') return;
-      const t = ctx.currentTime + (delay || 0);
+      const o = opt || {}, t = ctx.currentTime + (o.delay || 0);
       const osc = ctx.createOscillator(), g = ctx.createGain();
-      osc.type = type || 'sine';
+      osc.type = o.type || 'sine';
       osc.frequency.setValueAtTime(freq, t);
-      envelope(g, t, peak, .006, dur);
-      osc.connect(g); g.connect(master);
-      osc.start(t); osc.stop(t + dur + .05);
+      if (o.detune) osc.detune.setValueAtTime(o.detune, t);
+      if (o.glide) osc.frequency.exponentialRampToValueAtTime(o.glide, t + dur);
+      envelope(g, t, peak, o.attack || .006, dur);
+      osc.connect(g); g.connect(bus);
+      osc.start(t); osc.stop(t + dur + .08);
     }
-    // A soft struck-medal bell: inharmonic partials, long decay.
-    function bell(strength) {
-      const k = strength || 1, base = 196;
-      [[1, .55], [2, .26], [2.76, .17], [5.4, .08], [8.9, .04]].forEach((p, i) => {
-        tone(base * p[0], p[1] * k, 2.8 - i * .28, 'sine', i * .006);
+    // Pure-integer ratios on A2 (110 Hz): 1, 5/4, 3/2, 2, 5/2, 3 — a just-intoned chord.
+    const CHORD = [1, 1.25, 1.5, 2, 2.5, 3];
+    const DUST = [440, 550, 660, 880, 1100, 1320];
+
+    // Sacred: a slowly unfolding harmonic series, with a φ-ratio voice that beats against it.
+    function chord(strength) {
+      const k = strength || 1;
+      CHORD.forEach((r, i) => {
+        tone(ROOT * r, .036 * k / (1 + i * .3), 5.4 - i * .35,
+          { attack: 1.1 + i * .18, delay: i * .26, type: 'sine' });
       });
-      tone(98, .18 * k, 3.1, 'sine', 0);
+      tone(ROOT / 2, .05 * k, 6.5, { attack: 1.6, type: 'sine' });
+      tone(ROOT * PHI, .012 * k, 6, { attack: 1.8, type: 'triangle' });
     }
-    function tick(isAuto) {
-      const k = isAuto ? .28 : 1;
-      tone(660, .055 * k, .075, 'triangle', 0);
-      tone(990, .022 * k, .055, 'sine', .008);
+    // Mysterious: sparse high harmonics surfacing out of a long reverb tail.
+    function stardust(strength) {
+      const k = strength || 1, f = DUST[Math.floor(Math.random() * DUST.length)];
+      tone(f, .026 * k, 2.2, { attack: .005, type: 'sine' });
+      tone(f * 2, .009 * k, 1.3, { attack: .004, delay: .03, type: 'sine' });
+      tone(f * 1.5, .007 * k, 1.8, { attack: .01, delay: .08, type: 'sine' });
     }
-    function flip() {
-      if (!enabled || !ctx || ctx.state !== 'running' || !noiseBuf) { bell(.6); return; }
+    function flipSound() {
+      if (!enabled || !ctx || ctx.state !== 'running' || !noiseBuf) { chord(.6); return; }
       const t = ctx.currentTime;
       const src = ctx.createBufferSource(); src.buffer = noiseBuf;
-      const bp = ctx.createBiquadFilter();
-      bp.type = 'bandpass'; bp.Q.value = 1.1;
-      bp.frequency.setValueAtTime(380, t);
-      bp.frequency.exponentialRampToValueAtTime(1500, t + .18);
-      bp.frequency.exponentialRampToValueAtTime(520, t + .42);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = .8;
+      lp.frequency.setValueAtTime(1800, t);
+      lp.frequency.exponentialRampToValueAtTime(180, t + 1.4);
       const g = ctx.createGain();
-      envelope(g, t, .085, .02, .44);
-      src.connect(bp); bp.connect(g); g.connect(master);
-      src.start(t); src.stop(t + .5);
-      tone(294, .05, .3, 'sine', .02);
-      bell(.35);
+      envelope(g, t, .055, .18, 1.6);
+      src.connect(lp); lp.connect(g); g.connect(bus);
+      src.start(t); src.stop(t + 1.8);
+      chord(.55);
     }
+    // The continuous nebula bed: fundamental, fifth, octave and two φ-ratio tones,
+    // each breathing on its own slow LFO, so the interference pattern never repeats.
+    function startDrone() {
+      if (!ctx || drones.length) return;
+      const t = ctx.currentTime;
+      const layers = [
+        { f: ROOT / 2, a: .030, rate: .031, type: 'sine' },
+        { f: ROOT * .75, a: .019, rate: .047, type: 'sine' },
+        { f: ROOT, a: .016, rate: .059, type: 'sine' },
+        { f: ROOT * PHI, a: .010, rate: .023, type: 'triangle' },
+        { f: ROOT * PHI * PHI, a: .007, rate: .037, type: 'triangle' }
+      ];
+      layers.forEach(L => {
+        const osc = ctx.createOscillator(), g = ctx.createGain();
+        const lfo = ctx.createOscillator(), lg = ctx.createGain();
+        osc.type = L.type; osc.frequency.value = L.f;
+        lfo.frequency.value = L.rate; lg.gain.value = L.a * .5;
+        g.gain.setValueAtTime(.0001, t);
+        g.gain.setTargetAtTime(L.a, t, 2.6);
+        lfo.connect(lg); lg.connect(g.gain);
+        osc.connect(g); g.connect(bus);
+        osc.start(t); lfo.start(t);
+        drones.push({ osc, g, lfo });
+      });
+      document.body.dataset.audioLayers = String(drones.length);
+    }
+    function stopDrone() {
+      if (!ctx || !drones.length) return;
+      const t = ctx.currentTime;
+      drones.forEach(d => {
+        d.g.gain.cancelScheduledValues(t);
+        d.g.gain.setValueAtTime(Math.max(.0001, d.g.gain.value), t);
+        d.g.gain.exponentialRampToValueAtTime(.0001, t + 1.6);
+        try { d.osc.stop(t + 1.8); d.lfo.stop(t + 1.8); } catch (e) {}
+      });
+      drones = [];
+      document.body.dataset.audioLayers = '0';
+    }
+    function scheduleDust() {
+      if (dustTimer) clearInterval(dustTimer);
+      dustTimer = setInterval(() => {
+        if (!enabled || !ctx || ctx.state !== 'running' || document.hidden) return;
+        if (Math.random() < .6) stardust(.55);
+      }, 7000);
+    }
+    function ping() { tone(880, .016, .55, { attack: .004, type: 'sine' }); }
     function setEnabled(v) {
       enabled = v;
       document.body.dataset.sound = v ? 'on' : 'off';
       if (v && hint) hint.hidden = true;
       toggles.forEach(b => {
         b.setAttribute('aria-pressed', String(v));
-        b.setAttribute('aria-label', v ? '关闭音效' : '开启音效');
+        b.setAttribute('aria-label', v ? '关闭声景' : '开启声景');
         b.classList.toggle('is-on', v);
         const label = b.dataset.soundLabel;
-        if (label === '1') b.textContent = v ? '♪ 关闭音效' : '♪ 开启音效';
-        else if (label === 'top') b.textContent = v ? '♪ 音效 · 开' : '♪ 音效';
+        if (label === '1') b.textContent = v ? '♪ 关闭声景' : '♪ 开启声景';
+        else if (label === 'top') b.textContent = v ? '♪ 声景 · 开' : '♪ 声景';
       });
       if (!v) {
         if (master && ctx) {
           const t = ctx.currentTime;
           master.gain.cancelScheduledValues(t);
           master.gain.setValueAtTime(Math.max(.0001, master.gain.value), t);
-          master.gain.exponentialRampToValueAtTime(.0001, t + .18);
+          master.gain.exponentialRampToValueAtTime(.0001, t + .5);
         }
+        if (dustTimer) { clearInterval(dustTimer); dustTimer = null; }
+        stopDrone();
         return;
       }
       if (!ensure()) { enabled = false; document.body.dataset.sound = 'unsupported'; return; }
@@ -756,8 +826,10 @@
       const t = ctx.currentTime;
       master.gain.cancelScheduledValues(t);
       master.gain.setValueAtTime(.0001, t);
-      master.gain.exponentialRampToValueAtTime(LEVEL, t + .25);
-      setTimeout(() => { if (enabled) bell(.55); }, 280);
+      master.gain.exponentialRampToValueAtTime(LEVEL, t + .35);
+      startDrone();
+      scheduleDust();
+      setTimeout(() => { if (enabled) chord(.8); }, 420);
     }
 
     // A one-time, dismissible nudge so the sound switch is impossible to miss.
@@ -778,14 +850,14 @@
     document.addEventListener('click', e => {
       if (!enabled) return;
       if (e.target.closest('[data-sound-toggle], .medal-switch')) return;
-      if (e.target.closest('button, .nav-btn, .motion-btn')) tone(520, .03, .05, 'sine', 0);
+      if (e.target.closest('button, .nav-btn, .motion-btn')) ping();
     });
     document.addEventListener('fx:sound', e => {
       if (!enabled) return;
       const d = e.detail || {};
-      if (d.name === 'bell') bell(1);
-      else if (d.name === 'tick') tick(!!d.auto);
-      else if (d.name === 'flip') flip();
+      if (d.name === 'chord') chord(1);
+      else if (d.name === 'tick') stardust(d.auto ? .3 : .85);
+      else if (d.name === 'flip') flipSound();
     });
   }
 
