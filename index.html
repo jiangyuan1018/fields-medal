@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#101111">
+  <title>菲尔兹奖 · 九十年的数学史 | Fields Medal</title>
+  <meta name="description" content="从 1924 年多伦多的一纸决议，到 2026 年费城的最新一届：菲尔兹奖的起源、二十一届获奖年表、奖章铭文、评选规则与那些著名的例外。">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+  <div id="cursor-glow" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+  <div class="progress-rail" aria-hidden="true"><span id="progress-fill"></span></div>
+  <a class="skip-link" href="#prologue">跳到正文</a>
+
+  <header class="site-header" id="site-header">
+    <div class="header-inner wrap">
+      <a class="brand" href="#cover" aria-label="菲尔兹奖 · 回到顶部">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <circle cx="20" cy="20" r="17.5" stroke="currentColor" stroke-width="1"/>
+          <circle cx="20" cy="20" r="13.5" stroke="currentColor" stroke-width=".7" opacity=".55"/>
+          <path d="M11 8.5h18M11 31.5h18M11 8.5v23M29 8.5v23" stroke="currentColor" stroke-width=".7" opacity=".5"/>
+          <circle cx="20" cy="20" r="8" stroke="currentColor" stroke-width=".9"/>
+        </svg>
+        <span class="brand-text"><strong>菲尔兹奖</strong><em>FIELDS MEDAL</em></span>
+      </a>
+      <nav class="nav" id="site-nav" aria-label="章节导航">
+        <a href="#prologue">缘起</a>
+        <a href="#timeline">年表</a>
+        <a href="#numbers">数字</a>
+        <a href="#medal">奖章</a>
+        <a href="#rules">规则</a>
+      </nav>
+      <span class="header-meta">1936 — 2026</span>
+      <button type="button" class="header-motion" id="header-motion" aria-label="暂停全站动效" aria-pressed="false">⏸</button>
+      <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打开导航" aria-controls="site-nav" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section id="cover" class="hero" aria-labelledby="hero-title">
+      <div class="hero-stage">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <canvas id="medal-canvas" aria-hidden="true"></canvas>
+        <div class="hero-copy" id="hero-copy">
+          <p class="eyebrow center">INTERNATIONAL MEDALS FOR OUTSTANDING MATHEMATICAL DISCOVERIES</p>
+          <h1 id="hero-title">菲尔兹奖</h1>
+          <p class="hero-latin">FIELDS MEDAL</p>
+          <p class="hero-sub">一枚金质奖章，<br>与它背后九十年的数学世界。</p>
+        </div>
+        <div class="hero-reveal" id="hero-reveal" aria-hidden="true">
+          <span>1924 · 多伦多</span><i></i><span>1936 · 奥斯陆</span><i></i><span>2026 · 费城</span>
+        </div>
+        <div class="hero-bottom wrap">
+          <a class="scroll-hint" href="#prologue">向下探索 <span aria-hidden="true">↓</span></a>
+          <div class="motion-controls">
+            <button type="button" id="motion-toggle" class="motion-btn" aria-pressed="false">❚❚ 暂停动效</button>
+            <button type="button" id="motion-replay" class="motion-btn">↻ 重播开场</button>
+          </div>
+          <span class="hero-index mono">AUTO 3D / 01</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 01 缘起 ============ -->
+    <section id="prologue" class="section prologue reveal-section">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-no mono">01 / ORIGIN</span>
+          <span class="section-rule" aria-hidden="true"></span>
+          <span class="section-tag mono">1924 — 1936</span>
+        </div>
+        <div class="prologue-grid">
+          <div class="prologue-copy">
+            <h2 class="display">一笔结余，<br>一个没有国界的念头。</h2>
+            <p>1924 年，国际数学家大会（ICM）首次走出欧洲，来到多伦多。担任大会秘书长的加拿大数学家约翰·查尔斯·菲尔兹（John Charles Fields，1863—1932）为会议筹款，会务结束后留下了一笔结余。</p>
+            <p>第一次世界大战之后，国际数学界长期被国界与政治分歧切开。菲尔兹希望有一项真正属于全世界的奖项，既能表彰已完成的杰出工作，也能鼓励尚未展开的未来。这次大会通过决议：此后每届 ICM 颁发两枚金质奖章。</p>
+            <p>1932 年苏黎世大会正式设立该奖，菲尔兹捐出资金，奖项以他的名字命名；同年他因病去世，没能看到奖章颁出。1936 年奥斯陆大会上，首届菲尔兹奖授予芬兰数学家拉尔斯·阿尔福斯与美国数学家杰西·道格拉斯。</p>
+            <p class="footnote">奖章常被称作「数学界的诺贝尔奖」。它真正的特别之处不在奖金，而在那条 40 岁的年龄线：它奖励的是已经做出的突破，也押注于一个人接下来还能走多远。</p>
+          </div>
+          <aside class="dossier" aria-label="菲尔兹人物档案">
+            <div class="dossier-top">
+              <span class="mono">DOSSIER / 001</span>
+              <span class="mono">1863—1932</span>
+            </div>
+            <div class="dossier-portrait" aria-hidden="true">
+              <svg viewBox="0 0 220 220" fill="none">
+                <circle cx="110" cy="110" r="86" stroke="currentColor" stroke-width=".7" opacity=".35"/>
+                <circle cx="110" cy="110" r="66" stroke="currentColor" stroke-width=".7" opacity=".25"/>
+                <path d="M52 96h116M52 124h116M84 38v144M136 38v144" stroke="currentColor" stroke-width=".6" opacity=".2"/>
+                <path d="M110 34 34 110l76 76 76-76-76-76Z" stroke="currentColor" stroke-width=".8" opacity=".4"/>
+                <circle cx="110" cy="110" r="42" stroke="currentColor" stroke-width="1"/>
+                <text x="110" y="117" text-anchor="middle" class="portrait-initial">JCF</text>
+              </svg>
+            </div>
+            <dl class="dossier-list mono">
+              <div><dt>姓名</dt><dd>J. C. Fields</dd></div>
+              <div><dt>身份</dt><dd>加拿大数学家</dd></div>
+              <div><dt>关键角色</dt><dd>1924 ICM 秘书长</dd></div>
+              <div><dt>主张</dt><dd>数学的国际合作</dd></div>
+              <div><dt>基金</dt><dd>多伦多大学信托</dd></div>
+              <div><dt>见证</dt><dd>未及 1936 首颁</dd></div>
+            </dl>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 数据条 ============ -->
+    <section class="fact-strip" aria-label="菲尔兹奖速览">
+      <div class="wrap fact-grid">
+        <div class="fact"><span class="fact-num">1936</span><span class="fact-label mono">FIRST AWARDED / 首颁</span></div>
+        <div class="fact"><span class="fact-num">4<span class="fact-unit">年</span></span><span class="fact-label mono">EVERY FOUR YEARS / 一届</span></div>
+        <div class="fact"><span class="fact-num">40<span class="fact-unit">岁</span></span><span class="fact-label mono">AGE LIMIT / 年龄上限</span></div>
+        <div class="fact"><span class="fact-num">2–4</span><span class="fact-label mono">MEDALISTS / 每届人数</span></div>
+        <div class="fact"><span class="fact-num">15,000<span class="fact-unit">CAD</span></span><span class="fact-label mono">CASH PRIZE / 奖金</span></div>
+        <div class="fact"><span class="fact-num">63.5<span class="fact-unit">mm</span></span><span class="fact-label mono">DIAMETER / 直径</span></div>
+      </div>
+    </section>
+
+    <!-- ============ 02 年表（核心历史图） ============ -->
+    <section id="timeline" class="section timeline-section reveal-section">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-no mono">02 / CHRONICLE</span>
+          <span class="section-rule" aria-hidden="true"></span>
+          <span class="section-tag mono">21 CONGRESSES · 68 LAUREATES</span>
+        </div>
+        <h2 class="display">二十一届大会，<br>一条不断延长的时间线。</h2>
+        <p class="lede">从 1936 年奥斯陆到 2026 年费城，中间隔着十四年的战争空白、一次规则的放宽，与 68 人次的获奖者。柱高是那一届获奖的人数——点击任意一届，查看举办地与完整名单。</p>
+
+        <div class="chart-shell">
+          <div class="chart-topbar">
+            <span class="mono">获奖人数 / 届</span>
+            <div class="chart-legend mono">
+              <span><i class="lg-dot lg-2"></i>2 人</span>
+              <span><i class="lg-dot lg-3"></i>3 人</span>
+              <span><i class="lg-dot lg-4"></i>4 人</span>
+              <span><i class="lg-line"></i>1966 规则放宽</span>
+            </div>
+          </div>
+          <div class="chart-scroll" id="chart-scroll">
+            <div class="bars" id="bars" role="group" aria-label="各届菲尔兹奖获奖人数"></div>
+          </div>
+          <div class="chart-notes mono">
+            <span>※ 1936 → 1950：因第二次世界大战中断 14 年</span>
+            <span>※ 1982 华沙大会实际于 1983 年举行</span>
+            <span>※ 2022 原定圣彼得堡，改为线上，颁奖活动在赫尔辛基</span>
+          </div>
+        </div>
+
+        <div class="detail-panel" id="detail-panel" aria-live="polite">
+          <div class="detail-left">
+            <span class="mono detail-kicker">SELECTED CONGRESS / <span id="detail-index">01</span> OF 21</span>
+            <div class="detail-year" id="detail-year">1936</div>
+            <div class="detail-city" id="detail-city">奥斯陆 · Oslo</div>
+            <div class="detail-count" id="detail-count">2 位获奖者</div>
+            <p class="detail-note" id="detail-note">首届菲尔兹奖在挪威奥斯陆颁发。</p>
+          </div>
+          <div class="detail-right">
+            <span class="mono detail-kicker">THE MEDALISTS / 获奖者</span>
+            <ol class="laureate-list" id="laureate-list"></ol>
+          </div>
+        </div>
+
+        <div class="timeline-nav">
+          <button type="button" id="prev-btn" class="nav-btn" aria-label="上一届">← <span>上一届</span></button>
+          <div class="nav-track" aria-hidden="true"><span id="nav-fill"></span></div>
+          <button type="button" id="autoplay-toggle" class="nav-btn" aria-pressed="true">⏸ <span>自动轮播</span></button>
+          <button type="button" id="next-btn" class="nav-btn" aria-label="下一届"><span>下一届</span> →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 数字 ============ -->
+    <section id="numbers" class="section numbers-section reveal-section">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-no mono">03 / IN NUMBERS</span>
+          <span class="section-rule" aria-hidden="true"></span>
+          <span class="section-tag mono">STRUCTURE &amp; FIRSTS</span>
+        </div>
+        <h2 class="display">数字里的<br>九十年。</h2>
+
+        <div class="number-cards">
+          <div class="number-card"><span class="nc-num">21</span><span class="nc-label">届颁奖大会</span><span class="mono nc-note">1936 — 2026</span></div>
+          <div class="number-card"><span class="nc-num">68</span><span class="nc-label">人次获选</span><span class="mono nc-note">含 1 位拒领</span></div>
+          <div class="number-card"><span class="nc-num">20</span><span class="nc-label">座举办城市</span><span class="mono nc-note">横跨四大洲</span></div>
+          <div class="number-card"><span class="nc-num">3</span><span class="nc-label">位女性得主</span><span class="mono nc-note">2014 / 2022 / 2026</span></div>
+        </div>
+
+        <div class="split-grid">
+          <article class="panel">
+            <span class="mono panel-tag">A / 人数结构</span>
+            <h3>从「两枚」到「四枚」</h3>
+            <p>1924 年的决议写的是每届两枚金质奖章。1966 年，鉴于数学研究规模的大幅扩张，国际数学联盟同意每届最多可颁发四枚；现行章程表述为「至少两位，并强烈倾向四位」，同时要求兼顾数学领域的多样性。</p>
+            <div class="stack-bar" aria-label="21 届中，7 届颁给 2 人、2 届颁给 3 人、12 届颁给 4 人">
+              <span class="sb-2" style="flex:7"><em>7 届</em></span>
+              <span class="sb-3" style="flex:2"><em>2 届</em></span>
+              <span class="sb-4" style="flex:12"><em>12 届</em></span>
+            </div>
+            <div class="stack-legend mono">
+              <span><i class="lg-dot lg-2"></i>每届 2 人</span>
+              <span><i class="lg-dot lg-3"></i>每届 3 人</span>
+              <span><i class="lg-dot lg-4"></i>每届 4 人</span>
+            </div>
+          </article>
+
+          <article class="panel">
+            <span class="mono panel-tag">B / 地理足迹</span>
+            <h3>奖章走过的城市</h3>
+            <p>颁奖仪式始终绑定国际数学家大会。它从欧洲出发，1950 年到美国剑桥，1974 年到温哥华，1990 年到京都，2002 年首次来到北京，2010 年到海得拉巴，2018 年到里约热内卢，2026 年到费城。</p>
+            <ul class="city-line mono">
+              <li>OSLO '36</li><li>CAMBRIDGE '50</li><li>MOSCOW '66</li><li>KYOTO '90</li><li>BEIJING '02</li><li>RIO '18</li><li>PHILADELPHIA '26</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="firsts">
+          <div class="section-head inner">
+            <span class="section-no mono">MILESTONES / 那些「第一次」</span>
+            <span class="section-rule" aria-hidden="true"></span>
+          </div>
+          <div class="firsts-grid">
+            <div class="first-card"><span class="mono">1982</span><h4>丘成桐</h4><p>因卡拉比猜想等几何分析工作获奖，是首位获菲尔兹奖的华人数学家。</p></div>
+            <div class="first-card"><span class="mono">1998</span><h4>安德鲁·怀尔斯</h4><p>因年龄超出上限无缘奖章，IMU 破例授予银质纪念牌，表彰费马大定理的证明。</p></div>
+            <div class="first-card"><span class="mono">2006</span><h4>陶哲轩</h4><p>与奥昆科夫、佩雷尔曼、维尔纳同届获奖；佩雷尔曼拒绝领奖。</p></div>
+            <div class="first-card"><span class="mono">2014</span><h4>玛丽亚姆·米尔扎哈尼</h4><p>首位女性得主，研究领域为双曲几何与泰希米勒理论。</p></div>
+            <div class="first-card"><span class="mono">2022</span><h4>玛丽娜·维亚佐夫斯卡</h4><p>第二位女性得主，因八维与 24 维球体堆积问题的突破获奖。</p></div>
+            <div class="first-card"><span class="mono">2026</span><h4>王虹 · 邓煜</h4><p>王虹成为第三位女性得主；两位中国数学家首次在同一届获奖。</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 04 奖章 ============ -->
+    <section id="medal" class="section medal-section reveal-section">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-no mono">04 / THE MEDAL</span>
+          <span class="section-rule" aria-hidden="true"></span>
+          <span class="section-tag mono">14 KT GOLD · 169 G</span>
+        </div>
+        <h2 class="display">章面上，<br>写着一句拉丁文。</h2>
+        <p class="lede">奖章由 14K 金制成，直径 63.5 毫米，重 169 克。正面是阿基米德的侧像，背面是他最得意的图形——球内切于圆柱。以下为示意线稿，非原章复刻。</p>
+
+        <div class="medal-grid">
+          <div class="medal-figure">
+            <div class="medal-switch mono" role="group" aria-label="切换奖章正反面">
+              <button type="button" class="is-active" data-face="obverse">正面 / OBVERSE</button>
+              <button type="button" data-face="reverse">反面 / REVERSE</button>
+            </div>
+            <div class="medal-art" id="medal-art">
+              <div class="medal-halo halo-a" aria-hidden="true"></div>
+              <div class="medal-halo halo-b" aria-hidden="true"></div>
+              <div class="medal-3d">
+                <div class="medal-tilt">
+                  <div class="medal-flipper" id="medal-flipper">
+                    <div class="medal-face" data-face-svg="obverse">
+                      <svg class="medal-svg" viewBox="0 0 400 400" fill="none" role="img" aria-label="菲尔兹奖章正面示意：阿基米德侧像与拉丁文铭文">
+                <defs>
+                  <path id="obverseTop" d="M200,200 m-158,0 a158,158 0 0,1 316,0"/>
+                  <path id="obverseBottom" d="M200,200 m-148,0 a148,148 0 0,0 296,0"/>
+                  <radialGradient id="goldGlow" cx="50%" cy="40%" r="65%">
+                    <stop offset="0%" stop-color="#3a3222"/><stop offset="70%" stop-color="#211f1a"/><stop offset="100%" stop-color="#181a18"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="200" cy="200" r="188" fill="url(#goldGlow)" stroke="#c8a96a" stroke-width="1.1"/>
+                <circle cx="200" cy="200" r="176" stroke="#c8a96a" stroke-width=".6" opacity=".55"/>
+                <circle cx="200" cy="200" r="132" stroke="#c8a96a" stroke-width=".6" opacity=".4"/>
+                <text class="medal-ring" fill="#d9bd85" text-anchor="middle"><textPath href="#obverseTop" startOffset="50%">TRANSIRE SUUM PECTUS MUNDOQUE POTIRI</textPath></text>
+                <text class="medal-ring small" fill="#b9a678" text-anchor="middle"><textPath href="#obverseBottom" startOffset="50%">ΑΡΧΙΜΗΔΟΥΣ · RTM · MCMXXXIII</textPath></text>
+                <g stroke="#e2cf9f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".9">
+                  <path d="M168 118c-17 6-28 22-29 44-1 18 2 31-1 44l-9 9c-3 4-1 9 4 10 7 2 11 6 13 14l5 18c4 14 15 24 31 26h24c17-2 27-13 29-29 3-25 5-48 1-69-4-25-16-45-34-55-10-6-23-8-34-2Z"/>
+                  <path d="M139 162c9-14 24-22 42-22 21 0 36 9 44 25-10-6-25-9-42-8-18 1-33 5-44 5Z"/>
+                  <path d="M164 176c8-4 16-4 23-1M186 215c6 2 12 2 18 0M172 246c9 5 21 6 32 2"/>
+                  <path d="M146 253c10 16 25 25 44 27 18 1 32-7 40-20"/>
+                </g>
+                <path d="M200 292v14M186 299h28" stroke="#c8a96a" stroke-width=".7" opacity=".6"/>
+                      </svg>
+                    </div>
+                    <div class="medal-face" data-face-svg="reverse">
+                      <svg class="medal-svg" viewBox="0 0 400 400" fill="none" role="img" aria-label="菲尔兹奖章背面示意：球内切于圆柱与拉丁文铭文">
+                <defs>
+                  <path id="reverseTop" d="M200,200 m-158,0 a158,158 0 0,1 316,0"/>
+                  <path id="reverseBottom" d="M200,200 m-148,0 a148,148 0 0,0 296,0"/>
+                  <radialGradient id="goldGlow2" cx="50%" cy="40%" r="65%">
+                    <stop offset="0%" stop-color="#3a3222"/><stop offset="70%" stop-color="#211f1a"/><stop offset="100%" stop-color="#181a18"/>
+                  </radialGradient>
+                </defs>
+                <circle cx="200" cy="200" r="188" fill="url(#goldGlow2)" stroke="#c8a96a" stroke-width="1.1"/>
+                <circle cx="200" cy="200" r="176" stroke="#c8a96a" stroke-width=".6" opacity=".55"/>
+                <text class="medal-ring" fill="#d9bd85" text-anchor="middle"><textPath href="#reverseTop" startOffset="50%">CONGREGATI EX TOTO ORBE MATHEMATICI</textPath></text>
+                <text class="medal-ring" fill="#d9bd85" text-anchor="middle"><textPath href="#reverseBottom" startOffset="50%">OB SCRIPTA INSIGNIA TRIBUERE</textPath></text>
+                <g stroke="#e2cf9f" stroke-width="1.2" opacity=".9">
+                  <rect x="148" y="120" width="104" height="148" rx="2"/>
+                  <ellipse cx="200" cy="120" rx="52" ry="12"/>
+                  <ellipse cx="200" cy="268" rx="52" ry="12"/>
+                  <circle cx="200" cy="194" r="52"/>
+                  <ellipse cx="200" cy="194" rx="52" ry="12" opacity=".6"/>
+                  <ellipse cx="200" cy="194" ry="52" rx="12" opacity=".6"/>
+                  <path d="M148 120v148M252 120v148" stroke-dasharray="3 5" opacity=".4"/>
+                </g>
+                <path d="M186 292h28M200 286v12" stroke="#c8a96a" stroke-width=".8" opacity=".55"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="medal-caption mono" id="medal-caption">OBVERSE · 阿基米德侧像 / 「超越凡身，掌握世界」</p>
+          </div>
+
+          <div class="medal-text">
+            <div class="inscription">
+              <span class="mono">OBVERSE / 正面铭文</span>
+              <blockquote>TRANSIRE SUUM PECTUS<br>MUNDOQUE POTIRI</blockquote>
+              <p>大意：超越自身的局限，进而掌握世界。这句话改编自拉丁诗人，被用作对年轻数学家的期许。</p>
+            </div>
+            <div class="inscription">
+              <span class="mono">REVERSE / 背面铭文</span>
+              <blockquote>CONGREGATI EX TOTO ORBE<br>MATHEMATICI OB SCRIPTA<br>INSIGNIA TRIBUERE</blockquote>
+              <p>大意：全世界的数学家聚首，因杰出的著述而授予此奖。背景图案为阿基米德的球与外接圆柱——他本人要求刻在自己墓碑上的图形。</p>
+            </div>
+            <dl class="spec-list mono">
+              <div><dt>材质</dt><dd>14 KT 金 · 喷砂 / 雕刻 / 镀金 / 上漆</dd></div>
+              <div><dt>直径</dt><dd>63.5 mm</dd></div>
+              <div><dt>重量</dt><dd>169 g</dd></div>
+              <div><dt>单枚造价</dt><dd>约 5,500 CAD</dd></div>
+              <div><dt>奖金</dt><dd>15,000 CAD / 人</dd></div>
+              <div><dt>基金</dt><dd>菲尔兹设于多伦多大学的信托</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 05 规则与例外 ============ -->
+    <section id="rules" class="section rules-section reveal-section">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="section-no mono">05 / STATUTES &amp; EXCEPTIONS</span>
+          <span class="section-rule" aria-hidden="true"></span>
+          <span class="section-tag mono">IMU STATUTES</span>
+        </div>
+        <h2 class="display">规则很简洁，<br>例外很有意思。</h2>
+
+        <div class="rules-grid">
+          <div class="rule-list">
+            <div class="rule-item"><span class="mono">01</span><div><h3>四年一次</h3><p>在国际数学家大会（ICM）开幕时颁发，表彰「已取得的杰出成就，以及未来成就的潜力」。</p></div></div>
+            <div class="rule-item"><span class="mono">02</span><div><h3>40 岁这条线</h3><p>候选人的 40 岁生日不得早于颁奖当年 1 月 1 日。这使得菲尔兹奖与绝大多数终身成就奖截然不同。</p></div></div>
+            <div class="rule-item"><span class="mono">03</span><div><h3>至少两位，倾向四位</h3><p>1966 年起最多可颁四枚；委员会还须在选人时兼顾数学不同领域的代表性。</p></div></div>
+            <div class="rule-item"><span class="mono">04</span><div><h3>匿名的评委</h3><p>评委会由 IMU 执委会选定，通常主席由 IMU 主席担任。仅主席姓名公开，其余委员在颁奖前保持匿名。</p></div></div>
+            <div class="rule-item"><span class="mono">05</span><div><h3>并不宽裕的基金</h3><p>奖金与奖章来自菲尔兹设立的信托，虽经多次补充仍长期资金不足；2018 年的缺口由多伦多大学与菲尔兹研究所补足。</p></div></div>
+          </div>
+
+          <div class="exceptions">
+            <span class="mono panel-tag">EXCEPTIONS / 三段插曲</span>
+            <article class="exception-card">
+              <span class="mono">1998 · 柏林</span>
+              <h4>一块银牌</h4>
+              <p>怀尔斯证明费马大定理时已过年龄线。IMU 向他颁发银质纪念牌作为特别致敬，这不计入菲尔兹奖得主名录。</p>
+            </article>
+            <article class="exception-card">
+              <span class="mono">2006 · 马德里</span>
+              <h4>拒绝领奖</h4>
+              <p>格里戈里·佩雷尔曼因证明庞加莱猜想入选，但拒绝接受奖章，成为官方名录里唯一标注「declined」的名字。</p>
+            </article>
+            <article class="exception-card">
+              <span class="mono">2018 · 里约</span>
+              <h4>两枚奖章</h4>
+              <p>考切尔·比尔卡尔的奖章在颁奖当天失窃。大会随后补发一枚，他因此成为「领过两次菲尔兹奖章」的人。</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 尾声 ============ -->
+    <section class="epilogue reveal-section">
+      <div class="wrap epilogue-inner">
+        <div class="epilogue-orbit" aria-hidden="true">
+          <svg viewBox="0 0 400 400" fill="none">
+            <circle cx="200" cy="200" r="168" stroke="currentColor" stroke-width="1.1"/>
+            <circle cx="200" cy="200" r="124" stroke="currentColor" stroke-width=".8"/>
+            <ellipse cx="200" cy="200" rx="168" ry="54" stroke="currentColor" stroke-width="1"/>
+            <ellipse cx="200" cy="200" rx="54" ry="168" stroke="currentColor" stroke-width=".8"/>
+            <path d="M200 20v360M20 200h360" stroke="currentColor" stroke-width=".6"/>
+            <circle cx="200" cy="32" r="3" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="mono epilogue-tag">EPILOGUE / 1936 — 2026</span>
+        <p class="display">奖章只有 63.5 毫米，<br>它量的是九十年的数学。</p>
+        <p class="epilogue-note">从两枚到四枚，从奥斯陆到费城，被刻进章面的始终是同一句话：全世界的数学家聚首，因杰出的著述而授予此奖。</p>
+        <a class="back-top" href="#cover">回到开头 ↑</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div class="footer-brand"><strong>菲尔兹奖 · 九十年的数学史</strong><span class="mono">A CHRONICLE OF THE FIELDS MEDAL</span></div>
+      <div class="footer-sources">
+        <span class="mono">SOURCES / 资料来源</span>
+        <a href="https://www.mathunion.org/imu-awards/fields-medal" target="_blank" rel="noopener">国际数学联盟 IMU · 官方名录与章程 ↗</a>
+        <a href="https://en.wikipedia.org/wiki/International_Congress_of_Mathematicians" target="_blank" rel="noopener">ICM 历届举办地 ↗</a>
+        <a href="https://news.pku.edu.cn/xwzh/408c5f40e51b452ab715151c5d0e29b9.htm" target="_blank" rel="noopener">2026 年获奖报道 · 北京大学新闻网 ↗</a>
+      </div>
+      <div class="footer-meta mono">数据核对至 2026.11 · 获奖者中文译名以通行译法为准 · 本站为非官方的历史介绍页面</div>
+    </div>
+  </footer>
+</body>
+</html>
