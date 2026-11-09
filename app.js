@@ -76,6 +76,9 @@
       btn.textContent = withLabel ? (v ? '▶ 播放动效' : '❚❚ 暂停动效') : (v ? '▶' : '⏸');
     });
   }
+  function emitSound(name, extra) {
+    document.dispatchEvent(new CustomEvent('fx:sound', { detail: Object.assign({ name: name }, extra || {}) }));
+  }
 
   /* ---------------- Hero: auto-playing 3D particle medal ---------------- */
   function initHero() {
@@ -338,9 +341,11 @@
       const dt = clamp(now - lastFrame, 0, 60);
       lastFrame = now;
       if (!paused) {
+        const introJustFinished = introElapsed < INTRO_MS;
         animTime += dt;
         angleBase += dt * .00032;
         introElapsed = Math.min(INTRO_MS, introElapsed + dt);
+        if (introJustFinished && introElapsed >= INTRO_MS) emitSound('bell');
       }
       if (!document.hidden && hero.getBoundingClientRect().bottom > -200) draw();
       requestAnimationFrame(loop);
@@ -381,9 +386,10 @@
 
     const barEls = Array.from(barsWrap.querySelectorAll('.bar'));
 
-    function select(i, center) {
+    function select(i, center, isAuto) {
       active = clamp(i, 0, CONGRESSES.length - 1);
       const c = CONGRESSES[active];
+      if (center) emitSound('tick', { auto: !!isAuto });
       barEls.forEach((b, k) => b.classList.toggle('is-active', k === active));
       $('#detail-index').textContent = String(active + 1).padStart(2, '0');
       $('#detail-year').textContent = String(c.y);
@@ -431,7 +437,7 @@
       if (Date.now() - lastInteraction < 3200) return;
       const sec = $('#timeline');
       if (!sec || !sec.classList.contains('is-live')) return;
-      select(active >= CONGRESSES.length - 1 ? 0 : active + 1, true);
+      select(active >= CONGRESSES.length - 1 ? 0 : active + 1, true, true);
     }, 4200);
     document.addEventListener('motion:replay', () => { select(0, true); markInteraction(); });
   }
@@ -452,6 +458,7 @@
       buttons.forEach(b => b.classList.toggle('is-active', b.dataset.face === face));
       if (flipper) flipper.classList.toggle('is-flipped', face === 'reverse');
       if (caption) caption.textContent = captions[face];
+      emitSound('flip');
     }
     buttons.forEach(btn => btn.addEventListener('click', () => {
       autoFlip = false; // manual control takes over
@@ -650,6 +657,121 @@
     });
   }
 
+  /* ---------------- Synthesized sound layer (Web Audio, no audio files) ---------------- */
+  function initAudio() {
+    const LEVEL = .16;
+    let ctx = null, master = null, noiseBuf = null, enabled = false;
+    const toggles = document.querySelectorAll('[data-sound-toggle]');
+    document.body.dataset.sound = 'off';
+
+    function ensure() {
+      if (ctx) return true;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return false;
+      try {
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = .0001;
+        master.connect(ctx.destination);
+        const len = Math.floor(ctx.sampleRate * .5);
+        noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const data = noiseBuf.getChannelData(0);
+        for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+        return true;
+      } catch (e) { return false; }
+    }
+    function resume() {
+      if (!ctx) return;
+      if (ctx.state === 'suspended') ctx.resume().then(() => { document.body.dataset.audioCtx = ctx.state; }).catch(() => {});
+      document.body.dataset.audioCtx = ctx.state;
+    }
+    function envelope(g, t, peak, attack, dur) {
+      g.gain.setValueAtTime(.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(.0001, peak), t + attack);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    }
+    function tone(freq, peak, dur, type, delay) {
+      if (!enabled || !ctx || ctx.state !== 'running') return;
+      const t = ctx.currentTime + (delay || 0);
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      envelope(g, t, peak, .006, dur);
+      osc.connect(g); g.connect(master);
+      osc.start(t); osc.stop(t + dur + .05);
+    }
+    // A soft struck-medal bell: inharmonic partials, long decay.
+    function bell(strength) {
+      const k = strength || 1, base = 196;
+      [[1, .55], [2, .26], [2.76, .17], [5.4, .08], [8.9, .04]].forEach((p, i) => {
+        tone(base * p[0], p[1] * k, 2.8 - i * .28, 'sine', i * .006);
+      });
+      tone(98, .18 * k, 3.1, 'sine', 0);
+    }
+    function tick(isAuto) {
+      const k = isAuto ? .28 : 1;
+      tone(660, .055 * k, .075, 'triangle', 0);
+      tone(990, .022 * k, .055, 'sine', .008);
+    }
+    function flip() {
+      if (!enabled || !ctx || ctx.state !== 'running' || !noiseBuf) { bell(.6); return; }
+      const t = ctx.currentTime;
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.Q.value = 1.1;
+      bp.frequency.setValueAtTime(380, t);
+      bp.frequency.exponentialRampToValueAtTime(1500, t + .18);
+      bp.frequency.exponentialRampToValueAtTime(520, t + .42);
+      const g = ctx.createGain();
+      envelope(g, t, .085, .02, .44);
+      src.connect(bp); bp.connect(g); g.connect(master);
+      src.start(t); src.stop(t + .5);
+      tone(294, .05, .3, 'sine', .02);
+      bell(.35);
+    }
+    function setEnabled(v) {
+      enabled = v;
+      document.body.dataset.sound = v ? 'on' : 'off';
+      toggles.forEach(b => {
+        b.setAttribute('aria-pressed', String(v));
+        b.setAttribute('aria-label', v ? '关闭音效' : '开启音效');
+        b.classList.toggle('is-on', v);
+        if (b.hasAttribute('data-sound-label')) b.textContent = v ? '♪ 关闭音效' : '♪ 开启音效';
+      });
+      if (!v) {
+        if (master && ctx) {
+          const t = ctx.currentTime;
+          master.gain.cancelScheduledValues(t);
+          master.gain.setValueAtTime(Math.max(.0001, master.gain.value), t);
+          master.gain.exponentialRampToValueAtTime(.0001, t + .18);
+        }
+        return;
+      }
+      if (!ensure()) { enabled = false; document.body.dataset.sound = 'unsupported'; return; }
+      resume();
+      const t = ctx.currentTime;
+      master.gain.cancelScheduledValues(t);
+      master.gain.setValueAtTime(.0001, t);
+      master.gain.exponentialRampToValueAtTime(LEVEL, t + .25);
+      setTimeout(() => { if (enabled) bell(.55); }, 280);
+    }
+
+    toggles.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setEnabled(!enabled); }));
+    document.addEventListener('pointerdown', resume, { passive: true });
+    document.addEventListener('click', e => {
+      if (!enabled) return;
+      if (e.target.closest('[data-sound-toggle], .medal-switch')) return;
+      if (e.target.closest('button, .nav-btn, .motion-btn')) tone(520, .03, .05, 'sine', 0);
+    });
+    document.addEventListener('fx:sound', e => {
+      if (!enabled) return;
+      const d = e.detail || {};
+      if (d.name === 'bell') bell(1);
+      else if (d.name === 'tick') tick(!!d.auto);
+      else if (d.name === 'flip') flip();
+    });
+  }
+
   initHero();
   initTimeline();
   initMedal();
@@ -657,4 +779,5 @@
   initWarpField();
   initCursorGlow();
   initAmbient();
+  initAudio();
 })();

@@ -566,6 +566,12 @@ main, .site-footer { position: relative; z-index: 1; }
 .epilogue-orbit::before { inset: 10%; animation: orbit3d 16s linear infinite reverse; }
 .epilogue-orbit::after { inset: 26%; animation: orbit3d 10s linear infinite; border-color: rgba(226,207,159,.5); }
 
+/* Sound toggle */
+[data-sound-toggle].is-on {
+  border-color: var(--gold); color: var(--gold-light);
+  background: rgba(200,169,106,.12); box-shadow: 0 0 14px rgba(200,169,106,.22);
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 1000px) {
   .fact-grid { grid-template-columns: repeat(3, 1fr); }
