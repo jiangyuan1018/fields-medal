@@ -14,6 +14,12 @@
   <canvas id="fx-canvas" aria-hidden="true"></canvas>
   <div id="cursor-glow" aria-hidden="true"></div>
   <div class="scanline" aria-hidden="true"></div>
+  <div class="sound-hint" id="sound-hint" hidden>
+    <span class="sh-icon" aria-hidden="true">♪</span>
+    <div class="sh-text"><strong>本站支持音效</strong><small>点击开启 · 浏览器要求手动授权</small></div>
+    <button type="button" id="sound-hint-open" class="sh-open">开启音效</button>
+    <button type="button" id="sound-hint-close" class="sh-close" aria-label="不再提示">×</button>
+  </div>
   <div class="progress-rail" aria-hidden="true"><span id="progress-fill"></span></div>
   <a class="skip-link" href="#prologue">跳到正文</a>
 
@@ -37,7 +43,7 @@
       </nav>
       <span class="header-meta">1936 — 2026</span>
       <button type="button" class="header-motion" id="header-motion" aria-label="暂停全站动效" aria-pressed="false">⏸</button>
-      <button type="button" class="header-motion" id="sound-toggle-header" data-sound-toggle aria-label="开启音效" aria-pressed="false">♪</button>
+      <button type="button" class="header-motion header-sound" id="sound-toggle-header" data-sound-toggle data-sound-label="top" aria-label="开启音效" aria-pressed="false">♪ 音效</button>
       <button class="menu-toggle" id="menu-toggle" type="button" aria-label="打开导航" aria-controls="site-nav" aria-expanded="false">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>

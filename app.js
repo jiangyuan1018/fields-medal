@@ -662,6 +662,7 @@
     const LEVEL = .16;
     let ctx = null, master = null, noiseBuf = null, enabled = false;
     const toggles = document.querySelectorAll('[data-sound-toggle]');
+    const hint = $('#sound-hint');
     document.body.dataset.sound = 'off';
 
     function ensure() {
@@ -732,11 +733,14 @@
     function setEnabled(v) {
       enabled = v;
       document.body.dataset.sound = v ? 'on' : 'off';
+      if (v && hint) hint.hidden = true;
       toggles.forEach(b => {
         b.setAttribute('aria-pressed', String(v));
         b.setAttribute('aria-label', v ? '关闭音效' : '开启音效');
         b.classList.toggle('is-on', v);
-        if (b.hasAttribute('data-sound-label')) b.textContent = v ? '♪ 关闭音效' : '♪ 开启音效';
+        const label = b.dataset.soundLabel;
+        if (label === '1') b.textContent = v ? '♪ 关闭音效' : '♪ 开启音效';
+        else if (label === 'top') b.textContent = v ? '♪ 音效 · 开' : '♪ 音效';
       });
       if (!v) {
         if (master && ctx) {
@@ -754,6 +758,19 @@
       master.gain.setValueAtTime(.0001, t);
       master.gain.exponentialRampToValueAtTime(LEVEL, t + .25);
       setTimeout(() => { if (enabled) bell(.55); }, 280);
+    }
+
+    // A one-time, dismissible nudge so the sound switch is impossible to miss.
+    if (hint) {
+      let dismissed = false;
+      try { dismissed = localStorage.getItem('fields-medal-sound-hint') === 'dismissed'; } catch (e) {}
+      if (!dismissed) setTimeout(() => { if (!enabled) hint.hidden = false; }, 1600);
+      const openBtn = $('#sound-hint-open'), closeBtn = $('#sound-hint-close');
+      if (openBtn) openBtn.addEventListener('click', () => { setEnabled(true); hint.hidden = true; });
+      if (closeBtn) closeBtn.addEventListener('click', () => {
+        hint.hidden = true;
+        try { localStorage.setItem('fields-medal-sound-hint', 'dismissed'); } catch (e) {}
+      });
     }
 
     toggles.forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setEnabled(!enabled); }));
